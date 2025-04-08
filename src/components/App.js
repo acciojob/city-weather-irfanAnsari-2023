@@ -1,55 +1,50 @@
 import React, { useState } from "react";
-import "./../styles/App.css";
 
-const App = () => {
+const API_KEY = "e467712b257e418838be97cc881a71de";
+
+function App() {
   const [query, setQuery] = useState("");
-  const [weatherData, setWeatherData] = useState(null);
-  const API_KEY = "YOUR_API_KEY_HERE"; // Replace this with your actual OpenWeatherMap API key
+  const [weather, setWeather] = useState(null);
 
-  const fetchWeather = async () => {
-    if (!query) return;
-
-    try {
-      const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${query}&appid=${API_KEY}&units=metric`
-      );
-      const data = await res.json();
-      if (data.cod === 200) {
-        setWeatherData(data);
-      } else {
-        setWeatherData(null);
-        alert("City not found!");
-      }
-    } catch (err) {
-      console.error("Error fetching weather data:", err);
+  const search =  (e) => {
+    if (e.key === "Enter") {
+      fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${query}&appid=${API_KEY}`
+      ).then((res)=>res.json()).then((resData)=>setWeather(resData))
+      
+      setQuery("");
     }
   };
 
+  const kelvinToFahrenheit = (k) => ((k - 273.15) * 9) / 5 + 32;
+
   return (
-    <div>
-      {/* Do not remove the main div */}
+    <div className="app">
       <input
-        className="search"
         type="text"
-        placeholder="Enter city name"
+        className="search"
+        placeholder="Enter a city"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        onKeyPress={search}
       />
-      <button onClick={fetchWeather}>Search</button>
-
-      {weatherData && (
+      {weather && (
         <div className="weather">
-          <h2>{weatherData.name}</h2>
-          <p>{weatherData.weather[0].description}</p>
-          <p>{weatherData.main.temp}°C</p>
-          <img
-            src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png`}
-            alt="weather-icon"
-          />
+          <div className="city">{weather.name}</div>
+          <div className="temperature">
+            {Math.round(kelvinToFahrenheit(weather.main.temp))}°F
+          </div>
+          <div className="description">{weather.weather[0].description}</div>
+          <div className="icon">
+            <img
+              src={`http://openweathermap.org/img/w/${weather.weather[0].icon}.png`}
+              alt={weather.weather[0].description}
+            />
+          </div>
         </div>
       )}
     </div>
   );
-};
+}
 
 export default App;
